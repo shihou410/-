@@ -38,15 +38,15 @@ void render();
 void clear();
 
 enum class BlockColor {
-  lan,      // 蓝色
-  zi,       // 紫色
-  hong,     // 红
-  lv,       // 绿
-  huang,    // 黄
-  qing,     // 橙
-  ding,     // 青
-  cheng,    // 锭
-  none = 0, // 无
+  lan = 0, // 蓝色
+  zi,      // 紫色
+  hong,    // 红
+  lv,      // 绿
+  huang,   // 黄
+  qing,    // 橙
+  ding,    // 青
+  cheng,   // 锭
+  none,    // 无
 };
 
 enum class BlockType {
@@ -93,7 +93,8 @@ void rotation();
 // 消除一行
 void destroyLine();
 
-float landSpeed = .2f; // 秒每格
+int landCount = 0;
+float landSpeed = 1.2f; // 秒每格
 Uint32 startTick = 0;
 float gameTime = 0;
 int main(int, char **) {
@@ -150,6 +151,12 @@ void init() {
     std::cout << "背景创建失败: " << IMG_GetError() << std::endl;
     exit(-1);
   }
+
+  for (int i = 0; i < 20; i++) {
+    for (int j = 0; j < 10; j++) {
+      map[i][j] = BlockColor::none;
+    }
+  }
 }
 
 void handleInput() {
@@ -187,9 +194,9 @@ void update() {
     for (int i = 0; i < BOX_MAX; i++) {
       int x = currentBlock[i][0] + block_pos[0];
       int y = currentBlock[i][1] + block_pos[1];
-
       map[y][x] = currentBlockColor;
     }
+    std::cout << "落下了：" << int(currentBlockColor) << std::endl;
     destroyLine();
     createBlock();
   } else {
@@ -218,10 +225,9 @@ void render() {
 
   // 绘制地图
   for (int i = 0; i < 20; i++) {
-
     for (int j = 0; j < 10; j++) {
       int index = int(map[i][j]);
-      if (index != 0) {
+      if (map[i][j] != BlockColor::none) {
         SDL_Rect srcrect = {index * BLOCK_WIDTH, 0, BLOCK_WIDTH, BLOCK_HEIGHT};
         SDL_Rect dstrect = {j * BLOCK_WIDTH + start_pos[0],
                             i * BLOCK_HEIGHT + start_pos[1], BLOCK_WIDTH,
@@ -249,7 +255,7 @@ void clear() {
 }
 
 void createBlock() {
-
+  landCount++;
   int i = block_type_randomtor(generator);
   if (int(BlockType::L) == i) {
     currentBlock = L;
@@ -270,7 +276,7 @@ void createBlock() {
   currentBlockColor = BlockColor(block_color_randomtor(generator));
   block_pos[0] = 0;
   block_pos[1] = 0;
-  landSpeed = 0.2;
+  landSpeed = 1.2f;
 }
 
 bool onMove(int bx, int by) {
@@ -288,7 +294,6 @@ bool onPut(int bx, int by) {
   for (int i = 0; i < BOX_MAX; i++) {
     int x = currentBlock[i][0] + bx;
     int y = currentBlock[i][1] + by;
-
     if (map[y][x] != BlockColor::none || y >= 20)
       return true;
   }
@@ -308,6 +313,9 @@ void destroyLine() {
     if (temp) {
       for (int j = 0; j < 10; j++) {
         map[i][j] = BlockColor::none;
+        for (int t = i; t > 0; t--) {
+          map[t][j] = map[t - 1][j];
+        }
       }
     }
   }
