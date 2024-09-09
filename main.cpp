@@ -112,8 +112,6 @@ int main(int, char **) {
   }
 
   clear();
-
-  std::cout << "Hello, from game1!\n";
 }
 
 void init() {
@@ -196,7 +194,6 @@ void update() {
       int y = currentBlock[i][1] + block_pos[1];
       map[y][x] = currentBlockColor;
     }
-    std::cout << "落下了：" << int(currentBlockColor) << std::endl;
     destroyLine();
     createBlock();
   } else {
